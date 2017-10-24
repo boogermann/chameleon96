@@ -16,13 +16,13 @@ read response
 if [ $response == "Y" ] 
 then
 echo "Copying svn_update"
-cp svn_script ../meerkat96
+cp svn_script ../chameleon96
 echo "Removing overlay directory"
-rm -rf ../meerkat96/overlay
+rm -rf ../chameleon96/overlay
 echo "Populating overlay directory"
-cp -ar overlay ../meerkat96
+cp -ar overlay ../chameleon96
 echo "Populating buildroot config"
-cp buildroot.config ../meerkat96/.config
+cp buildroot.config ../chameleon96/.config
 else
 echo "User aborted action"
 fi
