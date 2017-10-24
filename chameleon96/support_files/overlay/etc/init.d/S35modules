@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+#
+
+echo 4 >  /proc/sys/kernel/printk
+export COUNTRY=00
+/sbin/crda
+/sbin/modprobe brcmfmac  debug=0x1416
+sleep 4
+/usr/sbin/iw reg set US
+/sbin/ifdown wlan0
+
