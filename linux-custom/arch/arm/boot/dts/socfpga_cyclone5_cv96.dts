@@ -1,0 +1,376 @@
+/*
+ *  Copyright (C) 2013 Steffen Trumtrar <s.trumtrar@pengutronix.de>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/display/tda998x.h>
+#include "socfpga_cyclone5.dtsi"
+
+/ {
+	model = "NovTech CV96";
+	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
+
+	alias {
+//		mmc0 = &sls_sdhc;
+	};
+
+	chosen {
+		bootargs = "console=ttyS0,115200";
+	};
+
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x20000000>; /* 256MB */
+	};
+
+	regulator_3_3v: vcc3p3-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "VCC3P3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+       leds {
+                compatible = "gpio-leds";
+                usr0 {
+                        label = "user_led1";
+                        gpios = <&porta 14 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+                };
+
+                user1 {
+                        label = "user_led2";
+                        gpios = <&porta 22 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+                };
+
+                user2 {
+                        label = "user_led3";
+                        gpios = <&porta 25 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+                };
+
+                user3 {
+                        label = "user_led4";
+                        gpios = <&portb 3 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+                };
+        };
+
+/*
+	wlreg_on: fixedregulator@100 {
+		compatible = "regulator-fixed";
+		regulator-name = "wlreg_on";
+		//gpio = <&gpio5 16 0>;
+		startup-delay-us = <100>;
+		enable-active-high;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+	};
+*/
+
+
+    ethernet@ff702000 {
+		status = "disabled";
+	};
+
+	soc {
+
+        hps_0_fpgamgr: fpgamgr@0xff706000 {
+            compatible = "altr,fpga-mgr-16.0", "altr,fpga-mgr";
+            reg = <0xff706000 0x00001000>,
+                <0xffb90000 0x00000100>;
+            reg-names = "axi_slave0", "axi_slave1";
+            interrupt-parent = <&intc>;
+            interrupts = <0 175 4>; 
+            transport = "mmio"; /* embeddedsw.dts.params.transport type STRING */
+        }; //end fpgamgr@0xff706000 (hps_0_fpgamgr)
+
+		alt_vip_vfr_0: vip@0xff201000{
+			compatible = "altr,vip-frame-reader-1.0",
+				"altr,vip-frame-reader-9.1";
+			reg = <0xff201000 0x00000080>;
+			max-width = <1280>;
+			max-height = <720>;
+			bits-per-color = <8>;
+			mem-word-width = <128>;
+		};
+
+		hps_0_bridges: bridge@0xff200000 {
+            compatible = "altr,bridge-16.0", "simple-bus";
+            reg = <0xff200000 0x200000>; /*Novtech was ff210000 */
+
+        /*    
+		clocks = <0x2 0x2 0x2>;
+                clock-names = "h2f_lw_axi_clock", "f2h_sdram0_clock", "f2h_sdram1_clock";         
+        */
+
+            #address-cells = <0x2>;
+            #size-cells = <0x1>;
+
+                        ranges = <0x1 0x10000 0xff210000 0x8>,
+                                <0x1 0x0 0xff200000 0x400>,
+				<0x1 0x1000 0xff201000 0x400>,
+				<0x1 0x2000 0xff202000 0x400>,
+				<0x1 0x3000 0xff203000 0x400>,
+
+                                <0x1 0x460 0xff200460 0x20>,
+				<0x1 0x1460 0xff201460 0x20>,
+				<0x1 0x2460 0xff202460 0x20>,
+				<0x1 0x3460 0xff203460 0x20>,
+
+                                <0x1 0x480 0xff200480 0x20>,
+				<0x1 0x1480 0xff201480 0x20>,
+				<0x1 0x2480 0xff202480 0x20>,
+				<0x1 0x3480 0xff203480 0x20>,
+
+				<0x1 0x4a0 0xff2004a0 0x8>,
+				<0x1 0x14a0 0xff2014a0 0x8>,
+				<0x1 0x24a0 0xff2024a0 0x8>,
+				<0x1 0x34a0 0xff2034a0 0x8>,
+
+				<0x1 0x1400 0xff201400 0x20>,
+				<0x1 0x400 0xff200400 0x20>, 
+				<0x1 0x2400 0xff202400 0x20>, 
+				<0x1 0x3400 0xff203400 0x20>,
+
+				<0x1 0x420 0xff200420 0x20>,
+				<0x1 0x1420 0xff201420 0x20>,
+				<0x1 0x2420 0xff202420 0x20>,
+				<0x1 0x3420 0xff203420 0x20>,
+
+				<0x1 0x500 0xff200500 0x10>,
+				<0x1 0x510 0xff200510 0x10>,
+				<0x1 0x1500 0xff201500 0x10>,
+				<0x1 0x1510 0xff201510 0x10>,
+
+				<0x1 0x2500 0xff202500 0x10>,
+				<0x1 0x2510 0xff202510 0x10>, 
+				<0x1 0x3500 0xff203500 0x10>,
+				<0x1 0x3510 0xff203510 0x10>,
+
+				<0x1 0x11000 0xff211000 0x400>,
+				<0x1 0x20000 0xff220000 0x10>,
+				<0x1 0x20010 0xff220010 0x10>;
+
+/*
+            ranges = <0x00000001 0x00010000 0xff210000 0x00000008>,
+		<0x00000001 0x00001000 0xFF201000 0x00000400>,
+		<0x00000001 0x00001400 0xFF201400 0x00000008>,
+		<0x00000001 0x00001450 0xFF201450 0x00000008>,
+		<0x00000001 0x00001500 0xFF201500 0x00000010>,
+		<0x00000001 0x00001560 0xFF201560 0x00000020>,
+		<0x00000001 0x00011000 0xFF211000 0x00000400>,
+		<0x00000001 0x00020010 0xFF220010 0x00000010>;
+*/
+
+/*
+         ranges = <0x00000001 0x00010000 0xff210000 0x00000008>,
+		<0x00000001 0x00011000 0xFF211000 0x00000400>,
+		<0x00000001 0x00020010 0xFF220010 0x00000010>;
+*/
+
+
+			sls_sdhc: mmc0@0x00011000 {
+				compatible = "SLS,sls_sdio-1.10", "sls,sdio-cntrlr";
+				reg = < 0x00000001 0x00011000 0x00000400 >;
+				interrupt-parent = < &intc >;
+				interrupts = < 0 0x2c 4 >;
+			/*	interrupts <4>; */
+				clocks = < 50000000 >; /* appended from boardinfo */
+				broken-cd; /* appended from boardinfo */
+				bus-width = < 1 >; /* appended from boardinfo */
+				max-frequency = < 200000000 >;/*  appended fromyy boardinfo*/
+				/* max-frequency = < 100000000 >; */   /* 100 Mhz should make SD clock 50Mhz - using divider value 2 on 100Mhz from avalon clock */
+/* setting max-frequency higher (400 Mhz) will make SD clock smaller (12.5) Mhz due to divider value 4 */
+ 
+				/* max-frequency = < 400000000 >; */
+/* appended from boardinfo */
+				keep-power-in-suspend; /* appended from boardinfo */
+				enable-sdio-wakeup;
+
+				/* NOVTECH - no vmmc-supply? */
+			       	vmmc-supply = <&regulator_3_3v>;
+       				vqmmc-supply = <&regulator_3_3v>;
+
+				wifi-host;
+				no-1-8-v;
+    				non-removable;
+#if 0
+    wlan_0:  wlan@0 {
+        compatible = "brcm,bcm4329-fmac";
+	interrupts = <0 0x1a 4>;
+#if 0
+      wlreg_on-supply = <&wlreg_on>;
+    	bcmdhd_wlan_irq = <&gpio6 14 0>;
+      	bcmdhd_wlan_irq = <0 0x1a 4>;
+#endif
+    };
+#endif
+
+			}; //end mmc@0x100011000 (sls_sdio)
+
+			pll_lock_nirqs_status_reg: gpio@0x000020010 {
+				compatible = "altr,pio-16.0", "altr,pio-1.0";
+				reg = <0x00000001 0x00020010 0x00000010>;
+				altr,gpio-bank-width = <5>; /* embeddedsw.dts.params.altr,gpio-bank-width type NUMBER */
+				resetvalue = <0>;   /* embeddedsw.dts.params.resetvalue type NUMBER */
+				#gpio-cells = <2>;
+				gpio-controller;
+           	}; //end gpio@0x100020010 (pll_lock_nirqs_status_reg)
+	    };  //end bridge@0xff210000 (hps_0_bridges)
+	};
+
+	lcdc {
+		status = "okay";
+#if 0
+		/* If you want to get 24 bit RGB and 16 BGR mode instead of
+		* current 16 bit RGB and 24 BGR modes, set the propety
+		* below to "crossed" and uncomment the video-ports -property
+		* in tda19988 node.
+		*/
+
+		/*    blue-and-red-wiring = "straight"; */
+
+		port {
+			lcdc_0: endpoint@0 {
+				remote-endpoint = <&hdmi_0>;
+			};
+		};  
+#endif
+	};
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+};
+
+&i2c2 {
+	status = "okay";
+#if 0
+       tda998x: hdmi-encoder {
+                compatible = "tda19988x";
+                //reg = <0x70>;
+                reg = <0x37>;
+
+
+                interrupt-parent = <&intc>;
+/*                interrupts = <16 IRQ_TYPE_EDGE_FALLING>;    */
+		interrupts = <0 0x11 4>; /* falling edge */
+
+        //      video-ports = <0x230145>;                  /* default value */
+
+/*
+                pinctrl-0 = <&pinctrl_tda998x &pinctrl_lcdif_dat &pinctrl_lcdif_ctrl>;
+                pinctrl-names = "default";
+*/
+
+                #sound-dai-cells = <0>;
+
+                /*      DAI-format      AP_ENA reg value */
+                /*audio-ports = <TDA998x_I2S    0x03>;*/
+                audio-ports = <AFMT_I2S 0x03>;
+
+		ports {
+			port@0 {
+				hdmi_0: endpoint@0 {
+					remote-endpoint = <&lcdc_0>;
+				};
+			};
+		};
+        };
+#endif
+};
+
+&i2c3 {
+	status = "okay";
+};
+
+&uart0 {
+        status = "okay";
+};
+
+&uart1 {
+        status = "okay";
+};
+
+&usbphy0 {
+	status = "okay";
+};
+
+&usb0 {
+/*	status = "okay"; */
+};
+
+&usb1 {
+   	status = "okay"; 
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&gpio2 {
+	status = "okay";
+};
+
+
+/*
+&mmc1 {
+    num-slots = <1>;
+    supports-highspeed;
+    broken-cd;
+    altr,dw-mshc-ciu-div = <3>;
+    altr,dw-mshc-sdr-timing = <0 3>;
+
+    slot@0 {
+    pinctrl-names = "default";
+    //pinctrl-0 = <&pinctrl_wifi>;
+    bus-width = <4>;
+    no-1-8-v;
+    non-removable;
+//  cd-post;
+//  pm-ignore-notify;
+
+    keep-power-in-suspend;
+    enable-sdio-wakeup;
+    vmmc-supply = <&wlreg_on>;
+    wifi-host;
+    status="okay";
+
+//   cd-gpios = <&gpio1 18 0>;
+//    reg = <0>;
+//    bus-width = <4>;
+    };  
+};
+*/
+
+
+
+
+
+
