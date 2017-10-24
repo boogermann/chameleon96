@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# 
+# Run this script from anywhere to update package DB 
+# and install git
+#
+sudo apt-get update
+sudo apt-get install git

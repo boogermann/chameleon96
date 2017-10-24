@@ -1,0 +1,281 @@
+#!/bin/bash
+
+# Copyright (c) 2012 NOVTECH Inc.
+# All rights reserved.
+#
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+#
+# This script synchronizes the working "build" directory with the SVN 
+# repository for this project.
+#
+########
+# V0.1 1/14/2017 - Initial creation
+# V0.2 1/15/2017 - Added status & update commands 
+# V0.2 5/29/2017 - ported for meerkat
+#
+
+# setup variables for project
+USER=chameleon96
+
+REPO=http://novtech.ddns.net/svn/Development/chameleon96
+COMMAND=$1
+TARGET=$2
+
+
+#
+#svn mkdir <repo>/newProject
+#svn checkout <repo>/newProject /path/to/codebase
+#svn add /path/to/codebase/*
+#svn commit /path/to/codebase -m "adding initial codebase"
+#
+
+#svn checkout $REPO build --username $USER
+#svn add $1
+#svn commit $1 -m "$2"
+#svn status build
+
+opt=''
+
+#
+# print the script usage
+#
+function print_usage() {
+    echo -e "\nUsage: $0 [help|get|put|add|package|create] [linux|uboot|support|filename] "
+    echo "         help      Help.  (This information.)"
+    echo "         get       get the current copy of the specified from SVN"
+    echo "         put       put the changes into SVN"
+    echo "         add       add a file to SVN control"
+    echo "         create    create a new local copy"
+    echo "         package   package source for customer delivery"
+    echo -e ""
+    echo -e "Run this script in the project directory."
+    echo -e ""
+}
+
+#
+#convert the user input to something sane
+#
+function convert_target {
+	echo -e "Target is $TARGET"
+	case $TARGET in
+	linux )
+		;&
+	Linux )
+		;&
+	LINUX )
+		TARGET="linux-custom"
+		;;
+	uboot )
+		;&
+	UBoot )
+		;&
+	UBOOT )
+		;&
+	u-boot )
+		;&
+	U-Boot )
+		;&
+	U-BOOT )
+		TARGET="uboot-custom"
+		;;	
+	support )
+		;&
+	Support )
+		;&
+	SUPPORT )
+		TARGET="support_files"
+		;;
+	* )
+		echo -e "assuming user has specified the path" 
+		;;
+	esac
+	echo -e "Target is now $TARGET"
+}
+
+#
+# retrieve status of the system from the SVN server
+#
+function code_status {
+	convert_target
+	echo -e "Getting code status"
+	echo -e "svn status build/$TARGET --username $USER"	
+	if [ $TARGET == "support_files" ]
+	then
+	svn status ../$TARGET
+	else
+	svn status build/$TARGET
+	fi
+} 
+
+#
+# update the code from the SVN server
+#
+function pull_code {
+	convert_target	
+	echo -e "Pulling code"	
+	echo -e	"svn update --username $USER"
+	if [ $TARGET == "support_files" ]
+	then
+	svn update ../$TARGET --username $USER
+	else
+	svn update build/$TARGET --username $USER
+	fi
+}
+
+#
+# Check out the repository from the server 
+#
+function new_code {
+	convert_target	
+	echo -e "creating new local copy of code"	
+	echo -e	"svn checkout $REPO/build/$TARGET --username $USER"
+	if [ $TARGET == "support_files" ]
+	then
+	svn checkout $REPO/$TARGET ../$TARGET --username $USER
+	else
+	svn checkout $REPO/$TARGET build/$TARGET --username $USER
+	fi
+}
+
+function push_code {
+	convert_target	
+	echo -e "Pushing code"
+	echo -e	"svn commit ./build/$TARGET --username $USER"
+	if [ $TARGET == "support_files" ]
+	then
+	svn commit ../$TARGET --username $USER
+	else
+	svn commit ./build/$TARGET --username $USER
+	fi
+}
+
+#
+# add new source files to the SVN server
+#
+function add_code {
+	convert_target	
+	echo -e "Adding Code"	
+	echo -e	"svn add $TARGET --username $USER"
+	svn add $TARGET --username $USER
+}
+
+
+#
+# clean and package the code for delivery to the customer 
+#
+function package_code {
+	convert_target
+	echo -e "packaging code"
+	cd build
+
+	case $TARGET in
+	linux-custom ) 
+		package_linux
+		;;
+	uboot-custom )
+		package_uboot
+		;;
+	*)
+		echo "unknown target for packaging"
+		;;
+	esac
+}
+
+function package_uboot {
+	cd build
+	cd uboot-custom
+	make distclean
+	cd ..
+	tar --exclude=.svn/* -cvzf $TARGET.tgz $TARGET
+	mkdir -p ../delivery	
+	mv $TARGET.tgz ../delivery
+}
+
+function package_linux {
+	cd build
+	cd linux-custom
+	make mrproper
+	cd ..
+	tar --exclude=.svn/* -cvzf $TARGET.tgz $TARGET
+	mkdir -p ../delivery	
+	mv $TARGET.tgz ../delivery
+}
+
+
+case $COMMAND in 
+    help ) 
+	;&
+    HELP ) 
+	;&
+    Help )
+	print_usage 
+	exit 0
+	;;
+    create )
+	;&
+    Create )
+	;&
+    CREATE )
+	new_code
+	exit 0
+	;;
+    get ) 
+	;& 
+    Get ) 
+	;& 
+    GET )
+ 	pull_code	
+	exit 0
+	;;
+    put ) 
+	;& 
+    Put )
+	;& 
+    PUT )
+	push_code
+	exit 0
+	;;
+    add )
+	;& 
+    Add )
+	;& 
+    ADD )
+	add_code
+	exit 0
+	;;
+    package )
+	;& 
+    Package )
+	;& 
+    PACKAGE )
+	package_code
+	exit 0
+	;;
+    status )
+	;& 
+    Status )
+	;& 
+    STATUS )
+	code_status	
+	exit 0
+	;;
+    * ) echo "*** Unknown Option ***"
+        echo "*** Exiting without action ***"
+		print_usage;
+        exit 0
+        ;;
+esac
+
+

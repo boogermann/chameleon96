@@ -1,0 +1,4 @@
+These files need to be installed in the linux build interface with the FPGA SDHC core.
+
+Run the includes "setup.sh" script to copy them to the appropriate locations within linux_custom prior to compiling. Cleaning the kernel of intermediate compile images may require replacing the sls object files.
+

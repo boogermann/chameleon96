@@ -1,0 +1,20 @@
+#
+#06_24_2017
+#---------
+
+Updates to load network automatically at boot. Built into the kernel the wifi driver attempts to load firmware before RFS is mounted. Loading as a module will prevent that.
+
+linux-custom:
+	arch/arm/configs/mx7_96_defconfig -  updated to move wifi driver to module.
+
+support-files:
+	linux.config - uppdated to move wifi driver to module
+	overlay/etc/init.d/S35modules - added to force load of fmac module on boot
+
+
+#
+#05_29_2017 
+#----------
+initial checkin
+
+
