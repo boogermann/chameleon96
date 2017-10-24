@@ -189,7 +189,7 @@
 	"fdtaddr=0x00000100\0" \
 	"bootimage=zImage\0" \
 	"bootimagesize=0x600000\0" \
-	"fdtimage=socfpga.dtb\0" \
+	"fdtimage=socfpga_chameleon96.dtb\0" \
 	"fdtimagesize=0x7000\0" \
 	"mmcloadcmd=fatload\0" \
 	"mmcloadpart=1\0" \
