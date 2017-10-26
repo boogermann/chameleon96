@@ -46,10 +46,8 @@ LINUX_PATH="images"
 # names of files/paths we will use later
 TMP_MOUNTPOINT="./tmp_mnt"
 ZIMAGE_NAME="zImage"
-#DTB_NAME="socfpga_cyclone5_cv96.dtb"
-DTB_NAME="socfpga.dtb"
+DTB_NAME="socfpga_chameleon96.dtb"
 UBOOT_SCR_NAME="u-boot.scr"
-#FPGA_BIN_NAME="chameleon96.rbf"
 FPGA_BIN_NAME="cv96.rbf"
 ROOTFS_NAME="rootfs.ext2"
 PRELOADER_NAME="preloader-mkpimage.bin"
@@ -209,12 +207,6 @@ function validate_device()
 	# Disallow the use of sda
 	if [[ $1 == *sda* ]]; then
 		echo -e "This script will not work on /dev/sda, which is usually a hard disk.\nExitting."
-		exit 1
-	fi
-
-	# Disallow the use of sdb
-	if [[ $1 == *sdb* ]]; then
-		echo -e "This script will not work on /dev/sdb, which is usually a hard disk.\nExitting."
 		exit 1
 	fi
 
