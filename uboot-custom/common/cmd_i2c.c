@@ -311,6 +311,31 @@ static int do_i2c_write(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[
 	return 0;
 }
 
+static int do_i2c_write_camera(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	u_char	chip;
+	uint	devaddr, alen, length;
+	u_char  *memaddr;
+	u_char  camera_cmd[0x1a] = {0x56, 0x53, 0x4c, 0x43, 0x00, 0x40, 0x02, 0x08,
+				    0x0c, 0x00, 0x04, 0x00, 0xb4, 0x00, 0x00, 0x10,
+				    0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+				    0x20, 0x08};
+	/* JRG was i2c_write(chip, devaddr++, alen, memaddr++, 1) */
+
+	if (i2c_write(0x3c, 0, 0, camera_cmd, 0x1a) != 0) {
+	  puts("Error writing camera_cmd to the chip.\n");
+	  return 1;
+	}
+
+	/*
+	 * No write delay with FRAM devices.
+	 */
+#if !defined(CONFIG_SYS_I2C_FRAM)
+	udelay(11000);
+#endif
+	return 0;
+}
+
 /**
  * do_i2c_md() - Handle the "i2c md" command-line command
  * @cmdtp:	Command data struct pointer
@@ -1536,6 +1561,7 @@ static cmd_tbl_t cmd_i2c_sub[] = {
 	U_BOOT_CMD_MKENT(sdram, 1, 1, do_sdram, "", ""),
 #endif
 	U_BOOT_CMD_MKENT(speed, 1, 1, do_i2c_bus_speed, "", ""),
+	U_BOOT_CMD_MKENT(camera, 0, 1, do_i2c_write_camera, "", ""),
 };
 
 #ifdef CONFIG_NEEDS_MANUAL_RELOC
