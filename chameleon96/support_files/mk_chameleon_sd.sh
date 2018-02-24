@@ -37,8 +37,8 @@ opt=''
 #set up paths to binaries
 
 #paths to recompiled altera images
-RBF_PATH="hdl_embedded_images"
-SPL_PATH="hdl_embedded_images"
+RBF_PATH="../support_files/hdl_embedded_images"
+SPL_PATH="images"
 #UBOOT_PATH="hdl_embedded_images"
 UBOOT_PATH="images"
 LINUX_PATH="images"
@@ -50,7 +50,7 @@ DTB_NAME="socfpga_chameleon96.dtb"
 UBOOT_SCR_NAME="u-boot.scr"
 FPGA_BIN_NAME="cv96.rbf"
 ROOTFS_NAME="rootfs.ext2"
-PRELOADER_NAME="preloader-mkpimage.bin"
+PRELOADER_NAME="u-boot-spl.bin"
 UBOOT_NAME="u-boot.img"
 
 function print_usage() {
