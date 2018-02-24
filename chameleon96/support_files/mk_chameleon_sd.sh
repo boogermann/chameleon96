@@ -215,6 +215,14 @@ function validate_device()
 		exit 1
 	fi
 
+	/sbin/udevadm info --query=property --name=$1 | grep 'ID_USB_DRIVER=usb-storage'
+	status_flag=$?
+	if [ $status_flag -ne  0 ]; then
+	    echo "Device $1 does not report as 'usb storage' it is unlikely to be a SD card."
+	    echo "Being cautious and exiting...."
+	    exit 1
+	fi
+
 	# check if we'll need a partition, but don't have one
 	if [[ $put_all -eq 0 ]]; then
 		if [[ $put_partition -eq 0 ]]; then
